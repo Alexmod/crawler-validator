@@ -7,12 +7,13 @@ use warnings qw(all);
 use Mojo::UserAgent;
 use List::MoreUtils 'true';
 use Term::ANSIColor;
+use Try::Tiny;
 
 # Адрес сайта для проверки
-my $site_to_check = 'http://habrahabr.ru';
+my $site_to_check = 'http://sw-g.ru';
 
 # Адрес локального валидатора
-my $local_validator = 'http://192.168.1.217:8888';
+my $local_validator = 'http://localhost:8888';
 
 # FIFO queue
 my @urls = ( Mojo::URL->new($site_to_check) );
@@ -51,8 +52,17 @@ sub parse {
         next if $link->host ne $url->host;
 
         push @urls, $link;
-        my $get   = $ua->get( $local_validator . "?doc=$link" )->res->body;
-        my @answ  = split / /, $get;
+
+        my $get;
+        try {
+            $get = $ua->get( $local_validator . "?doc=$link" )->res->body;
+        }
+        catch {
+            warn "caught error: $_";    # not $@
+            next;
+        };
+
+        my @answ = split / /, $get;
         my $count = true { /class="error"/ } @answ;
         print color("green"), $link, color("reset");
         print "  Кол-во ошибок в валидаторе: ",
