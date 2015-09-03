@@ -10,7 +10,7 @@ use Term::ANSIColor;
 use Try::Tiny;
 
 # Адрес сайта для проверки
-my $site_to_check = 'http://sw-g.ru';
+my $site_to_check = 'http://w2mem.com';
 
 # Адрес локального валидатора
 my $local_validator = 'http://localhost:8888';
@@ -55,13 +55,13 @@ sub parse {
 
         my $get;
         try {
+			say $ua->get($link)->res->code;
             $get = $ua->get( $local_validator . "?doc=$link" )->res->body;
         }
         catch {
             warn "caught error: $_";    # not $@
             next;
         };
-
         my @answ = split / /, $get;
         my $count = true { /class="error"/ } @answ;
         print color("green"), $link, color("reset");
